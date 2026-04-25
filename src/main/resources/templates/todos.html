@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Todo App</title>
+</head>
+<body>
+
+<h2>Danh sách công việc</h2>
+
+<table border="1">
+    <tr>
+        <th>ID</th>
+        <th>Nội dung</th>
+        <th>Ngày</th>
+        <th>Trạng thái</th>
+        <th>Ưu tiên</th>
+    </tr>
+
+    <tr th:each="t : ${todos}">
+        <td th:text="${t.id}"></td>
+        <td th:text="${t.content}"></td>
+        <td th:text="${t.dueDate}"></td>
+        <td th:text="${t.status}"></td>
+        <td th:text="${t.priority}"></td>
+    </tr>
+</table>
+
+<h2>Thêm mới</h2>
+
+<form th:action="@{/add}" th:object="${todo}" method="post">
+    <input type="text" th:field="*{content}" placeholder="Nội dung"/>
+    <span th:errors="*{content}"></span>
+    <br/>
+
+    <input type="date" th:field="*{dueDate}"/>
+    <span th:errors="*{dueDate}"></span>
+    <br/>
+
+    <input type="text" th:field="*{status}" placeholder="Status"/>
+    <br/>
+
+    <input type="text" th:field="*{priority}" placeholder="Priority"/>
+    <br/>
+
+    <button type="submit">Thêm</button>
+</form>
+
+</body>
+</html>
