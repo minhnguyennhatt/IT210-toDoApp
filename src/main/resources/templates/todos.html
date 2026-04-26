@@ -2,48 +2,341 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <title>Todo App</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            max-width: 900px;
+            margin: 30px auto;
+            padding: 0 20px;
+            background: #f4f6f8;
+            color: #333;
+        }
+
+        h2 {
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 8px;
+        }
+
+        /* Flash message */
+        .alert {
+            padding: 12px 18px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            font-weight: 500;
+        }
+
+        /* Table */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+            background: #fff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        th {
+            background: #3498db;
+            color: #fff;
+            padding: 12px 15px;
+            text-align: left;
+        }
+
+        td {
+            padding: 10px 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        tr:hover td {
+            background: #f0f7ff;
+        }
+
+        /* Status badge */
+        .status {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-done {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-in-progress {
+            background: #cce5ff;
+            color: #004085;
+        }
+
+        /* Priority badge */
+        .priority-high {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+
+        .priority-medium {
+            color: #f39c12;
+            font-weight: bold;
+        }
+
+        .priority-low {
+            color: #27ae60;
+            font-weight: bold;
+        }
+
+        /* Action buttons */
+        .btn {
+            display: inline-block;
+            padding: 6px 14px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 0.85em;
+            font-weight: 600;
+            transition: opacity 0.2s;
+        }
+
+        .btn:hover {
+            opacity: 0.85;
+        }
+
+        .btn-edit {
+            background: #f39c12;
+            color: #fff;
+        }
+
+        .btn-delete {
+            background: #e74c3c;
+            color: #fff;
+        }
+
+        .btn-submit {
+            background: #3498db;
+            color: #fff;
+            padding: 10px 24px;
+            font-size: 1em;
+        }
+
+        .btn-cancel {
+            background: #95a5a6;
+            color: #fff;
+            padding: 10px 24px;
+            font-size: 1em;
+            text-decoration: none;
+        }
+
+        /* Form */
+        .form-card {
+            background: #fff;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #555;
+        }
+
+        .form-group input,
+        .form-group select {
+            padding: 8px 12px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 0.95em;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            border-color: #3498db;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+        }
+
+        .error-msg {
+            color: #e74c3c;
+            font-size: 0.8em;
+            margin-top: 3px;
+        }
+
+        .form-actions {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .actions-cell {
+            display: flex;
+            gap: 6px;
+        }
+    </style>
 </head>
 <body>
 
+<!-- Flash message -->
+<div class="alert" th:if="${message}" th:text="${message}"></div>
+
 <h2>Danh sách công việc</h2>
 
-<table border="1">
+<table>
+    <thead>
     <tr>
         <th>ID</th>
         <th>Nội dung</th>
         <th>Ngày</th>
         <th>Trạng thái</th>
         <th>Ưu tiên</th>
+        <th>Thao tác</th>
     </tr>
-
+    </thead>
+    <tbody>
     <tr th:each="t : ${todos}">
         <td th:text="${t.id}"></td>
         <td th:text="${t.content}"></td>
         <td th:text="${t.dueDate}"></td>
-        <td th:text="${t.status}"></td>
-        <td th:text="${t.priority}"></td>
+        <td>
+            <span th:text="${t.status}"
+                  th:classappend="${t.status == 'DONE'} ? 'status-done' : (${t.status == 'IN_PROGRESS'} ? 'status-in-progress' : 'status-pending')"
+                  class="status"></span>
+        </td>
+        <td>
+            <span th:text="${t.priority}"
+                  th:classappend="${t.priority == 'HIGH'} ? 'priority-high' : (${t.priority == 'MEDIUM'} ? 'priority-medium' : 'priority-low')"></span>
+        </td>
+        <td>
+            <div class="actions-cell">
+                <a th:href="@{/edit/{id}(id=${t.id})}" class="btn btn-edit">Sửa</a>
+                <a th:href="@{/delete/{id}(id=${t.id})}" class="btn btn-delete"
+                   onclick="return confirm('Bạn có chắc muốn xóa công việc này?')">Xóa</a>
+            </div>
+        </td>
     </tr>
+    <tr th:if="${#lists.isEmpty(todos)}">
+        <td colspan="6" style="text-align:center; color:#999;">Chưa có công việc nào.</td>
+    </tr>
+    </tbody>
 </table>
 
-<h2>Thêm mới</h2>
+<!-- Form: Add or Edit -->
+<h2 th:if="${todo.id == null}">Thêm mới</h2>
+<h2 th:if="${todo.id != null}" th:text="'Chỉnh sửa công việc #' + ${todo.id}"></h2>
 
-<form th:action="@{/add}" th:object="${todo}" method="post">
-    <input type="text" th:field="*{content}" placeholder="Nội dung"/>
-    <span th:errors="*{content}"></span>
-    <br/>
+<div class="form-card">
+    <!-- Add form -->
+    <form th:if="${todo.id == null}" th:action="@{/add}" th:object="${todo}" method="post">
 
-    <input type="date" th:field="*{dueDate}"/>
-    <span th:errors="*{dueDate}"></span>
-    <br/>
+        <div class="form-row">
+            <div class="form-group" style="flex:2;">
+                <label>Nội dung</label>
+                <input type="text" th:field="*{content}" placeholder="Nhập nội dung công việc..."/>
+                <span class="error-msg" th:errors="*{content}"></span>
+            </div>
+            <div class="form-group">
+                <label>Ngày hạn</label>
+                <input type="date" th:field="*{dueDate}"/>
+                <span class="error-msg" th:errors="*{dueDate}"></span>
+            </div>
+        </div>
 
-    <input type="text" th:field="*{status}" placeholder="Status"/>
-    <br/>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Trạng thái</label>
+                <select th:field="*{status}">
+                    <option value="PENDING">Chưa bắt đầu</option>
+                    <option value="IN_PROGRESS">Đang làm</option>
+                    <option value="DONE">Hoàn thành</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Ưu tiên</label>
+                <select th:field="*{priority}">
+                    <option value="LOW">Thấp</option>
+                    <option value="MEDIUM">Trung bình</option>
+                    <option value="HIGH">Cao</option>
+                </select>
+            </div>
+        </div>
 
-    <input type="text" th:field="*{priority}" placeholder="Priority"/>
-    <br/>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-submit">Thêm</button>
+        </div>
+    </form>
 
-    <button type="submit">Thêm</button>
-</form>
+    <!-- Edit form -->
+    <form th:if="${todo.id != null}" th:action="@{/update}" th:object="${todo}" method="post">
+        <input type="hidden" th:field="*{id}"/>
+
+        <div class="form-row">
+            <div class="form-group" style="flex:2;">
+                <label>Nội dung</label>
+                <input type="text" th:field="*{content}" placeholder="Nhập nội dung công việc..."/>
+                <span class="error-msg" th:errors="*{content}"></span>
+            </div>
+            <div class="form-group">
+                <label>Ngày hạn</label>
+                <input type="date" th:field="*{dueDate}"/>
+                <span class="error-msg" th:errors="*{dueDate}"></span>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label>Trạng thái</label>
+                <select th:field="*{status}">
+                    <option value="PENDING">Chưa bắt đầu</option>
+                    <option value="IN_PROGRESS">Đang làm</option>
+                    <option value="DONE">Hoàn thành</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Ưu tiên</label>
+                <select th:field="*{priority}">
+                    <option value="LOW">Thấp</option>
+                    <option value="MEDIUM">Trung bình</option>
+                    <option value="HIGH">Cao</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-submit">Cập nhật</button>
+            <a th:href="@{/}" class="btn btn-cancel">Hủy</a>
+        </div>
+    </form>
+</div>
 
 </body>
 </html>
