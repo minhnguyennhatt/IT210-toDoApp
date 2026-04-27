@@ -2,425 +2,184 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <title th:text="#{app.title}">Todo App</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        * {
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
-        body {
-            max-width: 960px;
-            margin: 30px auto;
-            padding: 0 20px;
-            background: #f4f6f8;
-            color: #333;
-        }
-
-        /* Top bar */
-        .top-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: #fff;
-            padding: 12px 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-            margin-bottom: 20px;
-        }
-
-        .top-bar .owner-info {
-            font-size: 1.1em;
-            font-weight: 600;
-            color: #2c3e50;
-        }
-
-        .top-bar .owner-info span {
-            color: #3498db;
-        }
-
-        .top-bar .actions {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .top-bar .lang-switch a,
-        .top-bar .logout-link {
-            color: #667eea;
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 0.85em;
-            padding: 4px 12px;
-            border: 1px solid #667eea;
-            border-radius: 20px;
-            transition: all 0.3s;
-        }
-
-        .top-bar .lang-switch a:hover,
-        .top-bar .logout-link:hover {
-            background: #667eea;
-            color: #fff;
-        }
-
-        .top-bar .logout-link {
-            border-color: #e74c3c;
-            color: #e74c3c;
-        }
-
-        .top-bar .logout-link:hover {
-            background: #e74c3c;
-            color: #fff;
-        }
-
-        h2 {
-            color: #2c3e50;
-            border-bottom: 2px solid #3498db;
-            padding-bottom: 8px;
-        }
-
-        /* Flash message */
-        .alert {
-            padding: 12px 18px;
-            border-radius: 6px;
-            margin-bottom: 20px;
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-            font-weight: 500;
-        }
-
-        /* Table */
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 30px;
-            background: #fff;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        th {
-            background: #3498db;
-            color: #fff;
-            padding: 12px 15px;
-            text-align: left;
-        }
-
-        td {
-            padding: 10px 15px;
-            border-bottom: 1px solid #eee;
-        }
-
-        tr:hover td {
-            background: #f0f7ff;
-        }
-
-        /* Status badge */
-        .status {
-            display: inline-block;
-            padding: 3px 10px;
-            border-radius: 12px;
-            font-size: 0.85em;
-            font-weight: 600;
-        }
-
-        .status-PENDING {
-            background: #fff3cd;
-            color: #856404;
-        }
-
-        .status-DONE {
-            background: #d4edda;
-            color: #155724;
-        }
-
-        .status-IN_PROGRESS {
-            background: #cce5ff;
-            color: #004085;
-        }
-
-        /* Priority */
-        .priority-HIGH {
-            color: #e74c3c;
-            font-weight: bold;
-        }
-
-        .priority-MEDIUM {
-            color: #f39c12;
-            font-weight: bold;
-        }
-
-        .priority-LOW {
-            color: #27ae60;
-            font-weight: bold;
-        }
-
-        /* Buttons */
-        .btn {
-            display: inline-block;
-            padding: 6px 14px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            text-decoration: none;
-            font-size: 0.85em;
-            font-weight: 600;
-            transition: opacity 0.2s;
-        }
-
-        .btn:hover {
-            opacity: 0.85;
-        }
-
-        .btn-edit {
-            background: #f39c12;
-            color: #fff;
-        }
-
-        .btn-delete {
-            background: #e74c3c;
-            color: #fff;
-        }
-
-        .btn-submit {
-            background: #3498db;
-            color: #fff;
-            padding: 10px 24px;
-            font-size: 1em;
-        }
-
-        .btn-cancel {
-            background: #95a5a6;
-            color: #fff;
-            padding: 10px 24px;
-            font-size: 1em;
-            text-decoration: none;
-        }
-
-        /* Form */
-        .form-card {
-            background: #fff;
-            padding: 25px;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            margin-bottom: 30px;
-        }
-
-        .form-row {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 12px;
-            flex-wrap: wrap;
-        }
-
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            flex: 1;
-            min-width: 150px;
-        }
-
-        .form-group label {
-            font-weight: 600;
-            margin-bottom: 5px;
-            color: #555;
-        }
-
-        .form-group input,
-        .form-group select {
-            padding: 8px 12px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            font-size: 0.95em;
-        }
-
-        .form-group input:focus,
-        .form-group select:focus {
-            border-color: #3498db;
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
-        }
-
-        .error-msg {
-            color: #e74c3c;
-            font-size: 0.8em;
-            margin-top: 3px;
-        }
-
-        .form-actions {
-            margin-top: 15px;
-            display: flex;
-            gap: 10px;
-        }
-
-        .actions-cell {
-            display: flex;
-            gap: 6px;
-        }
+        .status-PENDING { background: #fff3cd; color: #856404; }
+        .status-DONE { background: #d4edda; color: #155724; }
+        .status-IN_PROGRESS { background: #cce5ff; color: #004085; }
+        .priority-HIGH { color: #dc3545; font-weight: bold; }
+        .priority-MEDIUM { color: #fd7e14; font-weight: bold; }
+        .priority-LOW { color: #198754; font-weight: bold; }
     </style>
 </head>
-<body>
+<body class="bg-light">
 
-<!-- Top bar: Owner info + Language switch + Logout -->
-<div class="top-bar">
-    <div class="owner-info">
-        <span th:text="#{app.welcome}">Welcome</span>,
-        <span th:text="${ownerName}">Owner</span>!
-    </div>
-    <div class="actions">
-        <div class="lang-switch">
-            <a th:href="@{/(lang='vi')}">🇻🇳 VI</a>
-            <a th:href="@{/(lang='en')}">🇬🇧 EN</a>
+<div class="container py-4" style="max-width: 960px;">
+
+    <!-- Top bar -->
+    <div class="d-flex justify-content-between align-items-center bg-white rounded shadow-sm p-3 mb-3">
+        <div class="fw-semibold fs-5">
+            <span th:text="#{app.welcome}">Welcome</span>,
+            <span class="text-primary" th:text="${ownerName}">Owner</span>!
         </div>
-        <a th:href="@{/logout}" class="logout-link" th:text="#{nav.logout}">Logout</a>
+        <div class="d-flex align-items-center gap-2">
+            <a th:href="@{/(lang='vi')}" class="btn btn-outline-secondary btn-sm">🇻🇳 VI</a>
+            <a th:href="@{/(lang='en')}" class="btn btn-outline-secondary btn-sm">🇬🇧 EN</a>
+            <a th:href="@{/logout}" class="btn btn-outline-danger btn-sm" th:text="#{nav.logout}">Logout</a>
+        </div>
     </div>
+
+    <!-- Flash message -->
+    <div class="alert alert-success" th:if="${message}" th:text="${message}"></div>
+
+    <!-- Todo list -->
+    <h4 class="border-bottom border-primary pb-2 mb-3" th:text="#{todo.list.title}">Todo List</h4>
+
+    <div class="table-responsive mb-4">
+        <table class="table table-bordered table-hover bg-white shadow-sm mb-0">
+            <thead class="table-primary">
+            <tr>
+                <th th:text="#{todo.id}">ID</th>
+                <th th:text="#{todo.content}">Content</th>
+                <th th:text="#{todo.dueDate}">Due Date</th>
+                <th th:text="#{todo.status}">Status</th>
+                <th th:text="#{todo.priority}">Priority</th>
+                <th th:text="#{todo.action}">Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="t : ${todos}">
+                <td th:text="${t.id}"></td>
+                <td th:text="${t.content}"></td>
+                <td th:text="${t.dueDate}"></td>
+                <td>
+                    <span th:classappend="'status-' + ${t.status}" class="badge rounded-pill">
+                        <span th:switch="${t.status}">
+                            <span th:case="PENDING" th:text="#{status.PENDING}"></span>
+                            <span th:case="IN_PROGRESS" th:text="#{status.IN_PROGRESS}"></span>
+                            <span th:case="DONE" th:text="#{status.DONE}"></span>
+                            <span th:case="*" th:text="${t.status}"></span>
+                        </span>
+                    </span>
+                </td>
+                <td>
+                    <span th:classappend="'priority-' + ${t.priority}">
+                        <span th:switch="${t.priority}">
+                            <span th:case="LOW" th:text="#{priority.LOW}"></span>
+                            <span th:case="MEDIUM" th:text="#{priority.MEDIUM}"></span>
+                            <span th:case="HIGH" th:text="#{priority.HIGH}"></span>
+                            <span th:case="*" th:text="${t.priority}"></span>
+                        </span>
+                    </span>
+                </td>
+                <td>
+                    <div class="d-flex gap-1">
+                        <a th:href="@{/edit/{id}(id=${t.id})}" class="btn btn-warning btn-sm" th:text="#{todo.edit}">Edit</a>
+                        <a th:href="@{/delete/{id}(id=${t.id})}" class="btn btn-danger btn-sm"
+                           th:attr="onclick='return confirm(\'' + #{confirm.delete} + '\)'"
+                           th:text="#{todo.delete}">Delete</a>
+                    </div>
+                </td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(todos)}">
+                <td colspan="6" class="text-center text-muted" th:text="#{todo.empty}">No tasks yet.</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Form: Add or Edit -->
+    <h4 th:if="${todo.id == null}" class="border-bottom border-primary pb-2 mb-3" th:text="#{todo.add.title}">Add New</h4>
+    <h4 th:if="${todo.id != null}" class="border-bottom border-primary pb-2 mb-3" th:text="#{todo.edit.title(${todo.id})}">Edit Task</h4>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+
+            <!-- Add form -->
+            <form th:if="${todo.id == null}" th:action="@{/add}" th:object="${todo}" method="post">
+
+                <div class="row g-3 mb-3">
+                    <div class="col-md-7">
+                        <label class="form-label" th:text="#{todo.add.content}">Content</label>
+                        <input type="text" th:field="*{content}" class="form-control" th:placeholder="#{todo.add.content.placeholder}"/>
+                        <div class="text-danger small" th:errors="*{content}"></div>
+                    </div>
+                    <div class="col-md-5">
+                        <label class="form-label" th:text="#{todo.add.dueDate}">Due Date</label>
+                        <input type="date" th:field="*{dueDate}" class="form-control"/>
+                        <div class="text-danger small" th:errors="*{dueDate}"></div>
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label" th:text="#{todo.add.status}">Status</label>
+                        <select th:field="*{status}" class="form-select">
+                            <option value="PENDING" th:text="#{status.PENDING}">Pending</option>
+                            <option value="IN_PROGRESS" th:text="#{status.IN_PROGRESS}">In Progress</option>
+                            <option value="DONE" th:text="#{status.DONE}">Done</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" th:text="#{todo.add.priority}">Priority</label>
+                        <select th:field="*{priority}" class="form-select">
+                            <option value="LOW" th:text="#{priority.LOW}">Low</option>
+                            <option value="MEDIUM" th:text="#{priority.MEDIUM}">Medium</option>
+                            <option value="HIGH" th:text="#{priority.HIGH}">High</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary" th:text="#{todo.add.submit}">Add</button>
+            </form>
+
+            <!-- Edit form -->
+            <form th:if="${todo.id != null}" th:action="@{/update}" th:object="${todo}" method="post">
+                <input type="hidden" th:field="*{id}"/>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-md-7">
+                        <label class="form-label" th:text="#{todo.add.content}">Content</label>
+                        <input type="text" th:field="*{content}" class="form-control" th:placeholder="#{todo.add.content.placeholder}"/>
+                        <div class="text-danger small" th:errors="*{content}"></div>
+                    </div>
+                    <div class="col-md-5">
+                        <label class="form-label" th:text="#{todo.add.dueDate}">Due Date</label>
+                        <input type="date" th:field="*{dueDate}" class="form-control"/>
+                        <div class="text-danger small" th:errors="*{dueDate}"></div>
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label" th:text="#{todo.add.status}">Status</label>
+                        <select th:field="*{status}" class="form-select">
+                            <option value="PENDING" th:text="#{status.PENDING}">Pending</option>
+                            <option value="IN_PROGRESS" th:text="#{status.IN_PROGRESS}">In Progress</option>
+                            <option value="DONE" th:text="#{status.DONE}">Done</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" th:text="#{todo.add.priority}">Priority</label>
+                        <select th:field="*{priority}" class="form-select">
+                            <option value="LOW" th:text="#{priority.LOW}">Low</option>
+                            <option value="MEDIUM" th:text="#{priority.MEDIUM}">Medium</option>
+                            <option value="HIGH" th:text="#{priority.HIGH}">High</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary" th:text="#{todo.edit.submit}">Update</button>
+                    <a th:href="@{/}" class="btn btn-secondary" th:text="#{todo.edit.cancel}">Cancel</a>
+                </div>
+            </form>
+
+        </div>
+    </div>
+
 </div>
 
-<!-- Flash message -->
-<div class="alert" th:if="${message}" th:text="${message}"></div>
-
-<!-- Todo list -->
-<h2 th:text="#{todo.list.title}">Todo List</h2>
-
-<table>
-    <thead>
-    <tr>
-        <th th:text="#{todo.id}">ID</th>
-        <th th:text="#{todo.content}">Content</th>
-        <th th:text="#{todo.dueDate}">Due Date</th>
-        <th th:text="#{todo.status}">Status</th>
-        <th th:text="#{todo.priority}">Priority</th>
-        <th th:text="#{todo.action}">Actions</th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr th:each="t : ${todos}">
-        <td th:text="${t.id}"></td>
-        <td th:text="${t.content}"></td>
-        <td th:text="${t.dueDate}"></td>
-        <td>
-            <span th:classappend="'status-' + ${t.status}" class="status">
-                <span th:switch="${t.status}">
-                    <span th:case="PENDING" th:text="#{status.PENDING}"></span>
-                    <span th:case="IN_PROGRESS" th:text="#{status.IN_PROGRESS}"></span>
-                    <span th:case="DONE" th:text="#{status.DONE}"></span>
-                    <span th:case="*" th:text="${t.status}"></span>
-                </span>
-            </span>
-        </td>
-        <td>
-            <span th:classappend="'priority-' + ${t.priority}">
-                <span th:switch="${t.priority}">
-                    <span th:case="LOW" th:text="#{priority.LOW}"></span>
-                    <span th:case="MEDIUM" th:text="#{priority.MEDIUM}"></span>
-                    <span th:case="HIGH" th:text="#{priority.HIGH}"></span>
-                    <span th:case="*" th:text="${t.priority}"></span>
-                </span>
-            </span>
-        </td>
-        <td>
-            <div class="actions-cell">
-                <a th:href="@{/edit/{id}(id=${t.id})}" class="btn btn-edit" th:text="#{todo.edit}">Edit</a>
-                <a th:href="@{/delete/{id}(id=${t.id})}" class="btn btn-delete"
-                   th:attr="onclick='return confirm(\'' + #{confirm.delete} + '\')'"
-                   th:text="#{todo.delete}">Delete</a>
-            </div>
-        </td>
-    </tr>
-    <tr th:if="${#lists.isEmpty(todos)}">
-        <td colspan="6" style="text-align:center; color:#999;" th:text="#{todo.empty}">No tasks yet.</td>
-    </tr>
-    </tbody>
-</table>
-
-<!-- Form: Add or Edit -->
-<h2 th:if="${todo.id == null}" th:text="#{todo.add.title}">Add New</h2>
-<h2 th:if="${todo.id != null}" th:text="#{todo.edit.title(${todo.id})}">Edit Task</h2>
-
-<div class="form-card">
-    <!-- Add form -->
-    <form th:if="${todo.id == null}" th:action="@{/add}" th:object="${todo}" method="post">
-
-        <div class="form-row">
-            <div class="form-group" style="flex:2;">
-                <label th:text="#{todo.add.content}">Content</label>
-                <input type="text" th:field="*{content}" th:placeholder="#{todo.add.content.placeholder}"/>
-                <span class="error-msg" th:errors="*{content}"></span>
-            </div>
-            <div class="form-group">
-                <label th:text="#{todo.add.dueDate}">Due Date</label>
-                <input type="date" th:field="*{dueDate}"/>
-                <span class="error-msg" th:errors="*{dueDate}"></span>
-            </div>
-        </div>
-
-        <div class="form-row">
-            <div class="form-group">
-                <label th:text="#{todo.add.status}">Status</label>
-                <select th:field="*{status}">
-                    <option value="PENDING" th:text="#{status.PENDING}">Pending</option>
-                    <option value="IN_PROGRESS" th:text="#{status.IN_PROGRESS}">In Progress</option>
-                    <option value="DONE" th:text="#{status.DONE}">Done</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label th:text="#{todo.add.priority}">Priority</label>
-                <select th:field="*{priority}">
-                    <option value="LOW" th:text="#{priority.LOW}">Low</option>
-                    <option value="MEDIUM" th:text="#{priority.MEDIUM}">Medium</option>
-                    <option value="HIGH" th:text="#{priority.HIGH}">High</option>
-                </select>
-            </div>
-        </div>
-
-        <div class="form-actions">
-            <button type="submit" class="btn btn-submit" th:text="#{todo.add.submit}">Add</button>
-        </div>
-    </form>
-
-    <!-- Edit form -->
-    <form th:if="${todo.id != null}" th:action="@{/update}" th:object="${todo}" method="post">
-        <input type="hidden" th:field="*{id}"/>
-
-        <div class="form-row">
-            <div class="form-group" style="flex:2;">
-                <label th:text="#{todo.add.content}">Content</label>
-                <input type="text" th:field="*{content}" th:placeholder="#{todo.add.content.placeholder}"/>
-                <span class="error-msg" th:errors="*{content}"></span>
-            </div>
-            <div class="form-group">
-                <label th:text="#{todo.add.dueDate}">Due Date</label>
-                <input type="date" th:field="*{dueDate}"/>
-                <span class="error-msg" th:errors="*{dueDate}"></span>
-            </div>
-        </div>
-
-        <div class="form-row">
-            <div class="form-group">
-                <label th:text="#{todo.add.status}">Status</label>
-                <select th:field="*{status}">
-                    <option value="PENDING" th:text="#{status.PENDING}">Pending</option>
-                    <option value="IN_PROGRESS" th:text="#{status.IN_PROGRESS}">In Progress</option>
-                    <option value="DONE" th:text="#{status.DONE}">Done</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label th:text="#{todo.add.priority}">Priority</label>
-                <select th:field="*{priority}">
-                    <option value="LOW" th:text="#{priority.LOW}">Low</option>
-                    <option value="MEDIUM" th:text="#{priority.MEDIUM}">Medium</option>
-                    <option value="HIGH" th:text="#{priority.HIGH}">High</option>
-                </select>
-            </div>
-        </div>
-
-        <div class="form-actions">
-            <button type="submit" class="btn btn-submit" th:text="#{todo.edit.submit}">Update</button>
-            <a th:href="@{/}" class="btn btn-cancel" th:text="#{todo.edit.cancel}">Cancel</a>
-        </div>
-    </form>
-</div>
-
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
