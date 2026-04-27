@@ -2,6 +2,7 @@ package com.todoapp.controller;
 
 import com.todoapp.entity.Todo;
 import com.todoapp.repository.TodoRepository;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -18,11 +19,51 @@ public class TodoController {
         this.todoRepository = todoRepository;
     }
 
+    // ========== SESSION: Owner name ==========
+
+    // GET: Hiển thị trang nhập tên (login)
+    @GetMapping("/login")
+    public String showLoginForm(HttpSession session) {
+        // Nếu đã có tên rồi thì thẳng vào trang chủ
+        if (session.getAttribute("ownerName") != null) {
+            return "redirect:/";
+        }
+        return "login";
+    }
+
+    // POST: Lưu tên vào session
+    @PostMapping("/login")
+    public String processLogin(@RequestParam("ownerName") String ownerName,
+                               HttpSession session,
+                               RedirectAttributes redirectAttributes) {
+        if (ownerName == null || ownerName.trim().isEmpty()) {
+            redirectAttributes.addFlashAttribute("error", "Vui lòng nhập tên của bạn!");
+            return "redirect:/login";
+        }
+        session.setAttribute("ownerName", ownerName.trim());
+        return "redirect:/";
+    }
+
+    // GET: Đăng xuất (xóa session)
+    @GetMapping("/logout")
+    public String logout(HttpSession session) {
+        session.invalidate();
+        return "redirect:/login";
+    }
+
+    // ========== CRUD ==========
+
     // READ
     @GetMapping("/")
-    public String listTodos(Model model) {
+    public String listTodos(Model model, HttpSession session) {
+        // Chưa nhập tên → chuyển về login
+        if (session.getAttribute("ownerName") == null) {
+            return "redirect:/login";
+        }
+
         model.addAttribute("todos", todoRepository.findAll());
         model.addAttribute("todo", new Todo());
+        model.addAttribute("ownerName", session.getAttribute("ownerName"));
         return "todos";
     }
 
@@ -30,10 +71,12 @@ public class TodoController {
     @PostMapping("/add")
     public String addTodo(@Valid @ModelAttribute("todo") Todo todo,
                           BindingResult result,
-                          Model model) {
+                          Model model,
+                          HttpSession session) {
 
         if (result.hasErrors()) {
             model.addAttribute("todos", todoRepository.findAll());
+            model.addAttribute("ownerName", session.getAttribute("ownerName"));
             return "todos";
         }
 
@@ -43,12 +86,15 @@ public class TodoController {
 
     // GET: Hiển thị form edit
     @GetMapping("/edit/{id}")
-    public String showUpdateForm(@PathVariable Long id, Model model) {
+    public String showUpdateForm(@PathVariable Long id,
+                                 Model model,
+                                 HttpSession session) {
         Todo todo = todoRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid todo id: " + id));
 
         model.addAttribute("todo", todo);
         model.addAttribute("todos", todoRepository.findAll());
+        model.addAttribute("ownerName", session.getAttribute("ownerName"));
         return "todos";
     }
 
@@ -57,10 +103,12 @@ public class TodoController {
     public String updateTodo(@Valid @ModelAttribute("todo") Todo todo,
                              BindingResult result,
                              Model model,
+                             HttpSession session,
                              RedirectAttributes redirectAttributes) {
 
         if (result.hasErrors()) {
             model.addAttribute("todos", todoRepository.findAll());
+            model.addAttribute("ownerName", session.getAttribute("ownerName"));
             return "todos";
         }
 
